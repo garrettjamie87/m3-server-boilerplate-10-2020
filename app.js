@@ -10,6 +10,7 @@ const cors = require('cors');
 require('dotenv').config();
 
 const authRouter = require('./routes/auth.router');
+const privateRouter = require('./routes/private.router')
 
 
 // MONGOOSE CONNECTION
@@ -54,12 +55,15 @@ app.use(
 // MIDDLEWARE
 app.use(logger('dev'));
 app.use(bodyParser.json());
-app.use(bodyParser.urlencoded({ extended: false }));
+app.use(bodyParser.urlencoded({
+  extended: false
+}));
 app.use(cookieParser());
 app.use(express.static(path.join(__dirname, 'public')));
 
 // ROUTER MIDDLEWARE
 app.use('/auth', authRouter);
+app.use('/api', privateRouter);
 
 
 
@@ -69,7 +73,9 @@ app.use('/auth', authRouter);
 app.use((req, res, next) => {
   res
     .status(404)
-    .json({ code: 'not found' });    // .send( JSON.stringify(  { code: 'not found' }  ) )
+    .json({
+      code: 'not found'
+    }); // .send( JSON.stringify(  { code: 'not found' }  ) )
 
 });
 
