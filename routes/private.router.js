@@ -60,6 +60,7 @@ router.get('/matchpage/:id', (req, res, next) => {
       const {
             id
       } = req.params;
+      console.log(req.session.currentUser)
 
       if (!mongoose.Types.ObjectId.isValid(id)) {
             res
@@ -86,10 +87,11 @@ router.post('/buddy/:id', (req, res, next) => {
       const {
             id
       } = req.params;
-
+console.log(req.session.currentUser)
       User.findByIdAndUpdate(
 
                   req.session.currentUser._id, {
+                        
                         $push: {
                               buddyID: id
                         }
@@ -113,7 +115,7 @@ router.post('/buddy/:id', (req, res, next) => {
 
 
 //Delete => to delete specific buddy from profile but not permanently from DB
-router.post('/buddy/:id'), (req, res, ) => {
+router.delete('/buddy/:id', (req, res, next ) => {
 
 const {
       id
@@ -141,7 +143,7 @@ User.findByIdAndUpdate(
                   .status(500) // Internal Server Error
                   .json(err)
       })
-}
+});
 
 
 // GET => to view my profile
