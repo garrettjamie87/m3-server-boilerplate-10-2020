@@ -3,7 +3,7 @@ const router = express.Router();
 const mongoose = require('mongoose');
 
 const User = require('./../models/user.model');
-const Convo = require ('./../models/convo.model');
+const Convo = require('./../models/convo.model');
 
 // POST => the user inputs info about themselves and sends to the DB
 router.post('/homepage', (req, res, next) => {
@@ -14,17 +14,18 @@ router.post('/homepage', (req, res, next) => {
             language
       } = req.body;
 
+
       const {
             _id
       } = req.session.currentUser;
       User.findByIdAndUpdate(_id, {
 
-            sex,
-            topics,
-            level,
-            language
+                  sex,
+                  topics,
+                  level,
+                  language
 
-            }, {
+      }, {
                   new: true
             })
             .then((createdUser) => {
@@ -87,13 +88,75 @@ router.post('/buddy/:id', (req, res, next) => {
       const {
             id
       } = req.params;
-console.log(req.session.currentUser)
+      console.log(req.session.currentUser)
+      
       User.findByIdAndUpdate(
 
                   req.session.currentUser._id, {
-                        
+
                         $push: {
-                              buddyID: id
+                              buddyId: id
+                        }
+                  }, {
+                        new: true
+                  }
+
+
+            )     
+            .then((id) => {
+                  res
+                        .status(201) //created
+                        .json(id);
+            })
+            .catch((err) => {
+                  res
+                        .status(500) // Internal Server Error
+                        .json(err)
+            })
+});
+
+
+
+// GET => to get all buddies saved in profile
+router.get('/mybuddypage/:id', (req, res, next) => {
+      const {
+            id
+      } = req.params;
+      console.log(req.session.currentUser)
+
+      if (!mongoose.Types.ObjectId.isValid(id)) {
+            res
+                  .status(400) //  Bad Request
+                  .json({
+                        message: 'Specified id is not valid'
+                  })
+            return;
+      }
+
+      User
+            .findById(id)
+            .then((foundUser) => {
+                  res.status(200).json(foundUser); // OK
+            })
+            .catch((err) => {
+                  res.status(500).json(err); // Internal Server Error
+            })
+});
+
+
+
+//Delete => to delete specific buddy from profile but not permanently from DB
+router.delete('/buddy/:id', (req, res, next) => {
+
+      const {
+            id
+      } = req.params;
+
+      User.findByIdAndUpdate(
+
+                  req.session.currentUser._id, {
+                        $pull: {
+                              buddyId: id
                         }
                   }, {
                         new: true
@@ -111,38 +174,6 @@ console.log(req.session.currentUser)
                         .status(500) // Internal Server Error
                         .json(err)
             })
-});
-
-
-//Delete => to delete specific buddy from profile but not permanently from DB
-router.delete('/buddy/:id', (req, res, next ) => {
-
-const {
-      id
-} = req.params;
-
-User.findByIdAndUpdate(
-
-            req.session.currentUser._id, {
-                  $pull: {
-                        buddyID: id
-                  }
-            }, {
-                  new: true
-            }
-
-
-      )
-      .then((id) => {
-            res
-                  .status(201) //created
-                  .json(id);
-      })
-      .catch((err) => {
-            res
-                  .status(500) // Internal Server Error
-                  .json(err)
-      })
 });
 
 
@@ -248,33 +279,33 @@ router.get('/messages', (req, res, next) => {
 
 
 //POST => post messages to the DB
-router.post ('/messages/:id', (req, res, next) => { 
-const {
-      id
-} = req.params;
+router.post('/messages/:id', (req, res, next) => {
+      const {
+            id
+      } = req.params;
 
-User.findByIdAndUpdate(
+      User.findByIdAndUpdate(
 
-            req.session.currentUser._id, {
-                  $push: {
-                        buddyID: id
+                  req.session.currentUser._id, {
+                        $push: {
+                              buddyID: id
+                        }
+                  }, {
+                        new: true
                   }
-            }, {
-                  new: true
-            }
 
 
-      )
-      .then((id) => {
-            res
-                  .status(201) //created
-                  .json(id);
-      })
-      .catch((err) => {
-            res
-                  .status(500) // Internal Server Error
-                  .json(err)
-      })}
-)
+            )
+            .then((id) => {
+                  res
+                        .status(201) //created
+                        .json(id);
+            })
+            .catch((err) => {
+                  res
+                        .status(500) // Internal Server Error
+                        .json(err)
+            })
+})
 
 module.exports = router;
