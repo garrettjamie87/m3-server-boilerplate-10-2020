@@ -205,7 +205,7 @@ router.get('/user/:id', (req, res) => {
 
 
 // PUT => to edit user profile
-router.put('/user/edit/:id', (req, res, next) => {
+router.put('/user/edit', (req, res, next) => {
       const {
             id
       } = req.params;
@@ -216,14 +216,14 @@ router.put('/user/edit/:id', (req, res, next) => {
             language
       } = req.body;
 
-      if (!mongoose.Types.ObjectId.isValid(id)) {
-            res.status(400).json({
-                  message: 'Specified id is not valid'
-            });
-            return;
-      }
+      // if (!mongoose.Types.ObjectId.isValid(id)) {
+      //       res.status(400).json({
+      //             message: 'Specified id is not valid'
+      //       });
+      //       return;
+      // }
 
-      User.findByIdAndUpdate(id, {
+      User.findByIdAndUpdate(req.session.currentUser._id, {
                   sex,
                   topics,
                   level,
@@ -239,7 +239,7 @@ router.put('/user/edit/:id', (req, res, next) => {
 
 
 // DELETE => to delete user profile 
-router.delete('/user/delete/:id', (req, res) => {
+router.delete('/user/delete', (req, res, next) => {
       const {
             id
       } = req.params;
@@ -251,7 +251,7 @@ router.delete('/user/delete/:id', (req, res) => {
             return;
       }
 
-      User.findByIdAndRemove(id)
+      User.findByIdAndRemove(req.session.currentUser._id)
             .then(() => {
                   res
                         .status(202) //  Accepted
