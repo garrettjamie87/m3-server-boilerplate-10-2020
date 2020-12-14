@@ -84,11 +84,13 @@ router.get('/matchpage/:id', (req, res, next) => {
 
 
 //POST => to Save specific buddy
-router.post('/buddy/:id', (req, res, next) => {
+router.put('/buddy/:id', (req, res, next) => {
+     
       const {
             id
       } = req.params;
-      console.log(req.session.currentUser)
+      
+      console.log('HELLLOOOOO', req.session.currentUser)
       
       User.findByIdAndUpdate(
 
@@ -149,7 +151,7 @@ router.get('/mybuddypage/:id', (req, res, next) => {
 router.delete('/buddy/:id', (req, res, next) => {
 
       const {
-            id
+            _id
       } = req.params;
 
       User.findByIdAndUpdate(
@@ -241,25 +243,24 @@ router.put('/user/edit', (req, res, next) => {
 // DELETE => to delete user profile 
 router.delete('/user/delete', (req, res, next) => {
       const {
-            id
-      } = req.params;
+            _id
+      } = req.session.currentUser;
+console.log('hehehehehehehee', _id)
 
-      if (!mongoose.Types.ObjectId.isValid(id)) {
-            res.status(400).json({
-                  message: 'Specified id is not valid'
-            });
-            return;
-      }
+      // if (!mongoose.Types.ObjectId.isValid(id)) {
+      //       res.status(400).json({
+      //             message: 'Specified id is not valid'
+      //       });
+      //       return;
+      // }
 
-      User.findByIdAndRemove(req.session.currentUser._id)
+      User.findByIdAndRemove(_id)
             .then(() => {
                   res
                         .status(202) //  Accepted
                         .send(`Document ${id} was removed successfully.`);
             })
-            .catch(err => {
-                  res.status(500).json(err);
-            })
+      
 });
 
 //GET => get the messages that exist in DB
