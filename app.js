@@ -31,10 +31,10 @@ const app = express();
 app.use(
   cors({
     credentials: true,
-    origin: [process.env.PUBLIC_DOMAIN],
-    'http://barcelona-bigmouths.herokuapp.com',         // <-- ADD
-    'https://barcelona-bigmouths.herokuapp.com'  
-  }),
+    origin: [process.env.PUBLIC_DOMAIN,
+    'http://barcelona-bigmouths.herokuapp.com',        
+    'https://barcelona-bigmouths.herokuapp.com' 
+    ]}),
 );
 
 
