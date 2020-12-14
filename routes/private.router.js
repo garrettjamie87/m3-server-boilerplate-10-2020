@@ -4,6 +4,7 @@ const mongoose = require('mongoose');
 
 const User = require('./../models/user.model');
 const Convo = require('./../models/convo.model');
+const session = require('express-session');
 
 // POST => the user inputs info about themselves and sends to the DB
 router.post('/homepage', (req, res, next) => {
@@ -84,17 +85,17 @@ router.get('/matchpage/:id', (req, res, next) => {
 
 
 //POST => to Save specific buddy
-router.put('/buddy/:id', (req, res, next) => {
+router.put('/buddy/:id/:userID', (req, res, next) => {
      
       const {
-            id
+            id, userID
       } = req.params;
       
       console.log('HELLLOOOOO', req.session.currentUser)
       
       User.findByIdAndUpdate(
 
-                  req.session.currentUser._id, {
+                 userID, {
 
                         $push: {
                               buddyId: id
@@ -209,7 +210,7 @@ router.get('/user/:id', (req, res) => {
 // PUT => to edit user profile
 router.put('/user/edit', (req, res, next) => {
       const {
-            id
+            _id
       } = req.params;
       const {
             sex,
@@ -241,11 +242,10 @@ router.put('/user/edit', (req, res, next) => {
 
 
 // DELETE => to delete user profile 
-router.delete('/user/delete', (req, res, next) => {
+router.delete('/user/delete/:mee', (req, res, next) => {
       const {
-            _id
-      } = req.session.currentUser;
-console.log('hehehehehehehee', _id)
+           mee 
+      } = req.params;
 
       // if (!mongoose.Types.ObjectId.isValid(id)) {
       //       res.status(400).json({
@@ -254,11 +254,11 @@ console.log('hehehehehehehee', _id)
       //       return;
       // }
 
-      User.findByIdAndRemove(_id)
+      User.findByIdAndRemove(mee)
             .then(() => {
                   res
                         .status(202) //  Accepted
-                        .send(`Document ${id} was removed successfully.`);
+                        .send(`Document ${mee} was removed successfully.`);
             })
       
 });
@@ -279,17 +279,39 @@ router.get('/messages', (req, res, next) => {
 
 
 
+
+
+router.post('/createconvo/:id', (req, res, next) => {
+const{id} = req.params;
+      Convo.create({userOne: req.session.currentUser._id, userTwo: id})
+            .then((createdConvo) => {
+                  User.findByIdAndUpdate(req.session.currentUser._id, {$push:{conversations:createdConvo._id}},{new:true})
+                  .then ((updatedUser)=>{
+                        User.findByIdAndUpdate(id,{$push:{conversations:createdConvo._id}}, {new:true})
+                  })
+            })
+            .catch(err => {
+                  res.status(500) //Internal Sever error
+                        .json(err);
+            })
+});
+
+
 //POST => post messages to the DB
-router.post('/messages/:id', (req, res, next) => {
+router.post('/messages/:id/:convo', (req, res, next) => {
       const {
-            id
+            id, convo
       } = req.params;
 
-      User.findByIdAndUpdate(
+         const {message} = req.body
 
-                  req.session.currentUser._id, {
+      Convo.findByIdAndUpdate(
+
+                  convo, {
                         $push: {
-                              buddyID: id
+                              messages:{sender: req.session.currentUser._id,
+                              receiver: req.params.id,
+                              message: message}
                         }
                   }, {
                         new: true
