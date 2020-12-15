@@ -5,6 +5,7 @@ const mongoose = require('mongoose');
 const User = require('./../models/user.model');
 const Convo = require('./../models/convo.model');
 const session = require('express-session');
+const { isLoggedIn } = require('../helpers/middlewares');
 
 // POST => the user inputs info about themselves and sends to the DB
 router.post('/homepage', (req, res, next) => {
@@ -91,7 +92,7 @@ router.put('/buddy/:id/:userID', (req, res, next) => {
             id, userID
       } = req.params;
       
-      console.log('HELLLOOOOO', req.session.currentUser)
+      // console.log('HELLLOOOOO', req.session.currentUser)
       
       User.findByIdAndUpdate(
 
@@ -106,10 +107,10 @@ router.put('/buddy/:id/:userID', (req, res, next) => {
 
 
             )     
-            .then((id) => {
+            .then((updatedUser) => {
                   res
                         .status(201) //created
-                        .json(id);
+                        .json(updatedUser);
             })
             .catch((err) => {
                   res
@@ -138,6 +139,7 @@ router.get('/mybuddypage/:id', (req, res, next) => {
 
       User
             .findById(id)
+            .populate('buddyId')
             .then((foundUser) => {
                   res.status(200).json(foundUser); // OK
             })
@@ -149,17 +151,17 @@ router.get('/mybuddypage/:id', (req, res, next) => {
 
 
 //Delete => to delete specific buddy from profile but not permanently from DB
-router.delete('/buddy/:id', (req, res, next) => {
+router.delete('/buddy/:buddyid/user/:userid', (req, res, next) => {
 
       const {
-            _id
+            buddyid, userid
       } = req.params;
-
+console.log(buddyid, userid, 'jhsajhsjhsajhsajhsa')
       User.findByIdAndUpdate(
 
-                  req.session.currentUser._id, {
+                  userid,  {
                         $pull: {
-                              buddyId: id
+                              buddyId: buddyid
                         }
                   }, {
                         new: true
@@ -281,13 +283,26 @@ router.get('/messages', (req, res, next) => {
 
 
 
-router.post('/createconvo/:id', (req, res, next) => {
+router.post('/createconvo/:id', isLoggedIn, (req, res, next) => {
 const{id} = req.params;
       Convo.create({userOne: req.session.currentUser._id, userTwo: id})
             .then((createdConvo) => {
                   User.findByIdAndUpdate(req.session.currentUser._id, {$push:{conversations:createdConvo._id}},{new:true})
                   .then ((updatedUser)=>{
                         User.findByIdAndUpdate(id,{$push:{conversations:createdConvo._id}}, {new:true})
+                        .then((updatedUsertwo)=>{
+                              res.status (201)
+                              .json(createdConvo)
+
+                        })
+                        .catch(err => {
+                              res.status(500) //Internal Sever error
+                                    .json(err);
+                        }) 
+                  })
+                  .catch(err => {
+                        res.status(500) //Internal Sever error
+                              .json(err);
                   })
             })
             .catch(err => {
@@ -298,31 +313,26 @@ const{id} = req.params;
 
 
 //POST => post messages to the DB
-router.post('/messages/:id/:convo', (req, res, next) => {
-      const {
-            id, convo
-      } = req.params;
+router.post('/messages/:receiverId/:convo', isLoggedIn, (req, res, next) => {
+      const { receiverId, convo } = req.params;
 
-         const {message} = req.body
+      const {message} = req.body;
+
+      const newMessage = {
+            sender: req.session.currentUser._id,
+            receiver: receiverId,
+            message: message,
+          }
 
       Convo.findByIdAndUpdate(
-
-                  convo, {
-                        $push: {
-                              messages:{sender: req.session.currentUser._id,
-                              receiver: req.params.id,
-                              message: message}
-                        }
-                  }, {
-                        new: true
-                  }
-
-
+                  convo, 
+                  { $push: { messages: newMessage} },
+                  { new: true }
             )
-            .then((id) => {
+            .then((updatedConvo) => {
                   res
                         .status(201) //created
-                        .json(id);
+                        .json(updatedConvo);
             })
             .catch((err) => {
                   res
