@@ -8,12 +8,13 @@ const session = require('express-session');
 const { isLoggedIn } = require('../helpers/middlewares');
 
 // POST => the user inputs info about themselves and sends to the DB
-router.post('/homepage', (req, res, next) => {
+router.post('/homepage', isLoggedIn,  (req, res, next) => {
       const {
             sex,
             topics,
             level,
             language
+            
       } = req.body;
 
 
@@ -44,7 +45,7 @@ router.post('/homepage', (req, res, next) => {
 
 
 // GET => to get 'all the buddies that are recommended'	
-router.get('/matchpage', (req, res, next) => {
+router.get('/matchpage', isLoggedIn, (req, res, next) => {
 
       User
             .find()
@@ -59,7 +60,7 @@ router.get('/matchpage', (req, res, next) => {
 
 
 // GET => to get specific buddy from DB
-router.get('/matchpage/:id', (req, res, next) => {
+router.get('/matchpage/:id', isLoggedIn,(req, res, next) => {
       const {
             id
       } = req.params;
@@ -86,7 +87,7 @@ router.get('/matchpage/:id', (req, res, next) => {
 
 
 //POST => to Save specific buddy
-router.put('/buddy/:id/:userID', (req, res, next) => {
+router.put('/buddy/:id/:userID',  (req, res, next) => {
      
       const {
             id, userID
@@ -122,7 +123,7 @@ router.put('/buddy/:id/:userID', (req, res, next) => {
 
 
 // GET => to get all buddies saved in profile
-router.get('/mybuddypage/:id', (req, res, next) => {
+router.get('/mybuddypage/:id',isLoggedIn, (req, res, next) => {
       const {
             id
       } = req.params;
@@ -151,7 +152,7 @@ router.get('/mybuddypage/:id', (req, res, next) => {
 
 
 //Delete => to delete specific buddy from profile but not permanently from DB
-router.delete('/buddy/:buddyid/user/:userid', (req, res, next) => {
+router.delete('/buddy/:buddyid/user/:userid', isLoggedIn, (req, res, next) => {
 
       const {
             buddyid, userid
@@ -183,7 +184,7 @@ console.log(buddyid, userid, 'jhsajhsjhsajhsajhsa')
 
 
 // GET => to view my profile
-router.get('/user/:id', (req, res) => {
+router.get('/user/:id', isLoggedIn, (req, res) => {
 
       const {
             id
@@ -210,7 +211,7 @@ router.get('/user/:id', (req, res) => {
 
 
 // PUT => to edit user profile
-router.put('/user/edit', (req, res, next) => {
+router.put('/user/edit', isLoggedIn, (req, res, next) => {
       const {
             _id
       } = req.params;
@@ -244,7 +245,7 @@ router.put('/user/edit', (req, res, next) => {
 
 
 // DELETE => to delete user profile 
-router.delete('/user/delete/:mee', (req, res, next) => {
+router.delete('/user/delete/:mee', isLoggedIn, (req, res, next) => {
       const {
            mee 
       } = req.params;
@@ -266,7 +267,7 @@ router.delete('/user/delete/:mee', (req, res, next) => {
 });
 
 //GET => get the messages that exist in DB
-router.get('/messages', (req, res, next) => {
+router.get('/messages', isLoggedIn, (req, res, next) => {
 
       Convo
             .find()
