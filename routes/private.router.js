@@ -337,7 +337,7 @@ router.post('/messages/:receiverId/:convo/:senderId', (req, res, next) => {
                   { new: true }
             )
             .then((updatedConvo) => {
-                  console.log(updatedConvo, 'fuuuck')
+                  console.log(updatedConvo, '')
                   res
                         .status(201) //created
                         .json(updatedConvo);
