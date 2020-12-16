@@ -245,7 +245,7 @@ router.put('/user/edit', isLoggedIn, (req, res, next) => {
 
 
 // DELETE => to delete user profile 
-router.delete('/user/delete/:mee', isLoggedIn, (req, res, next) => {
+router.delete('/user/delete/:mee', (req, res, next) => {
       const {
            mee 
       } = req.params;
@@ -267,12 +267,14 @@ router.delete('/user/delete/:mee', isLoggedIn, (req, res, next) => {
 });
 
 //GET => get the messages that exist in DB
-router.get('/messages', isLoggedIn, (req, res, next) => {
-
+router.get('/messages/:id', isLoggedIn, (req, res, next) => {
+      const{id} = req.params;
+     
       Convo
-            .find()
-            .then((allTheMessages) => {
-                  res.status(200).json(allTheMessages);
+            .findById(id)
+            .populate("messages")
+            .then((oneMessage) => {
+                  res.status(200).json(oneMessage);
             })
             .catch(err => {
                   res.status(500) //Internal Sever error
@@ -284,20 +286,23 @@ router.get('/messages', isLoggedIn, (req, res, next) => {
 
 
 
-router.post('/createconvo/:id', isLoggedIn, (req, res, next) => {
-const{id} = req.params;
-      Convo.create({userOne: req.session.currentUser._id, userTwo: id})
+router.post('/createconvo/:userOne/:userTwo', (req, res, next) => {
+const{userOne, userTwo} = req.params;
+let conversation = {}
+      Convo.create({userOne: userOne, userTwo: userTwo})
             .then((createdConvo) => {
-                  User.findByIdAndUpdate(req.session.currentUser._id, {$push:{conversations:createdConvo._id}},{new:true})
+                  conversation = createdConvo
+                  User.findByIdAndUpdate(userOne, {$push:{conversations:createdConvo._id}},{new:true})
                   .then ((updatedUser)=>{
-                        User.findByIdAndUpdate(id,{$push:{conversations:createdConvo._id}}, {new:true})
+                        User.findByIdAndUpdate(userTwo,{$push:{conversations:createdConvo._id}}, {new:true})
                         .then((updatedUsertwo)=>{
+                              console.log(conversation, 'hahahahah')
                               res.status (201)
-                              .json(createdConvo)
+                              .json(conversation)
 
                         })
                         .catch(err => {
-                              res.status(500) //Internal Sever error
+                              resx.status(500) //Internal Sever error
                                     .json(err);
                         }) 
                   })
@@ -314,13 +319,14 @@ const{id} = req.params;
 
 
 //POST => post messages to the DB
-router.post('/messages/:receiverId/:convo', isLoggedIn, (req, res, next) => {
-      const { receiverId, convo } = req.params;
+router.post('/messages/:receiverId/:convo/:senderId', (req, res, next) => {
+      const { receiverId, convo, senderId } = req.params;
 
       const {message} = req.body;
+      console.log(req.body, "Helllooooo evrrryyonnnneeee")
 
       const newMessage = {
-            sender: req.session.currentUser._id,
+            sender: senderId,
             receiver: receiverId,
             message: message,
           }
@@ -331,6 +337,7 @@ router.post('/messages/:receiverId/:convo', isLoggedIn, (req, res, next) => {
                   { new: true }
             )
             .then((updatedConvo) => {
+                  console.log(updatedConvo, 'fuuuck')
                   res
                         .status(201) //created
                         .json(updatedConvo);
