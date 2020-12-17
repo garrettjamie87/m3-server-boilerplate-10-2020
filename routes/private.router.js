@@ -266,7 +266,7 @@ router.delete('/user/delete/:mee', (req, res, next) => {
       
 });
 
-//GET => get one messgae from the DB
+//GET => get one messagae from the DB
 router.get('/messages/:id', isLoggedIn, (req, res, next) => {
       const{id} = req.params;
      
@@ -286,11 +286,10 @@ router.get('/messages/:id', isLoggedIn, (req, res, next) => {
 //GET => get all convos that are in the DB
 
 router.get('/convos', isLoggedIn, (req, res, next) => {
-     
+     const userId = req.session.currentUser._id
       Convo
-            .find()
-            .populate("userOne")
-            .populate("userTwo")
+            .find({$or:[{userOne: userId}, {userTwo: userId}]})
+            .populate("userOne userTwo")
             .then((convos) => {
                   res.status(200).json(convos);
             })
