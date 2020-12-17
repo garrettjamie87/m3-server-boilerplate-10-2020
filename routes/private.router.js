@@ -272,7 +272,7 @@ router.get('/messages/:id', isLoggedIn, (req, res, next) => {
      
       Convo
             .findById(id)
-            .populate("messages")
+            .populate([{path: 'messages', populate:{path: 'sender'}}])
             .then((oneMessage) => {
                   res.status(200).json(oneMessage);
             })
