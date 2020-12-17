@@ -266,7 +266,7 @@ router.delete('/user/delete/:mee', (req, res, next) => {
       
 });
 
-//GET => get the messages that exist in DB
+//GET => get one messgae from the DB
 router.get('/messages/:id', isLoggedIn, (req, res, next) => {
       const{id} = req.params;
      
@@ -282,6 +282,23 @@ router.get('/messages/:id', isLoggedIn, (req, res, next) => {
             })
 });
 
+
+//GET => get all convos that are in the DB
+
+router.get('/convos', isLoggedIn, (req, res, next) => {
+     
+      Convo
+            .find()
+            .populate("userOne")
+            .populate("userTwo")
+            .then((convos) => {
+                  res.status(200).json(convos);
+            })
+            .catch(err => {
+                  res.status(500) //Internal Sever error
+                        .json(err);
+            })
+});
 
 
 
